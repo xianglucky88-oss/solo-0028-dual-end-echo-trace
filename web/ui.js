@@ -1,6 +1,7 @@
 import { draw } from '/chart.js';
 import { renderRows } from '/result-table.js';
 import { versionPanel } from '/version-panel.js';
+import { intakePanel } from '/intake-panel.js';
 
 const $ = (id) => document.getElementById(id);
 const base = document.body.dataset.prefix;
@@ -84,6 +85,9 @@ function bind(id, action, event = 'click') {
 guarded(async () => {
   model = await request('config');
   const versions = versionPanel(request, base);
+  intakePanel(request, base, async (digest) => {
+    await versions.refresh(digest);
+  });
   for (const spec of model.operations) {
     const button = document.createElement('button');
     button.textContent = spec.label;

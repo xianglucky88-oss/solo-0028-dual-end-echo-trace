@@ -28,9 +28,19 @@
       "responsibility": "SQLite 历史版本与原子封存"
     },
     {
+      "id": "intake",
+      "path": "echotrace/intake.py",
+      "responsibility": "分批登记、片段回执、缺口冲突快照与严格拼装的纯领域逻辑"
+    },
+    {
+      "id": "intake_store",
+      "path": "echotrace/intake_store.py",
+      "responsibility": "分批登记、回执、隔离与确认的 SQLite 持久化及同事务封存"
+    },
+    {
       "id": "service",
       "path": "echotrace/service.py",
-      "responsibility": "串联归约、比对和历史读取"
+      "responsibility": "串联归约、比对、历史读取和分批收档编排"
     },
     {
       "id": "server",
@@ -86,6 +96,11 @@
       "id": "version_panel",
       "path": "web/version-panel.js",
       "responsibility": "封存选择、版本读取、比对和下载"
+    },
+    {
+      "id": "intake_panel",
+      "path": "web/intake-panel.js",
+      "responsibility": "分批登记、逐份收档、争议隔离与按基准封存的界面"
     }
   ],
   "workflows": [
@@ -331,6 +346,30 @@
         "archive",
         "artifacts",
         "version_panel"
+      ]
+    },
+    {
+      "id": "batch_intake",
+      "name": "分批收档",
+      "entry": "POST /echotrace/api/intake/register、intake/fragment、intake/quarantine、intake/confirm",
+      "steps": [
+        "先登记线缆、两端序号范围与完整档标定，再逐份乱序交带序号片段",
+        "同端同序号原标识/时刻/幅值全相符视为同一条证据，重复提交取原回执，读数不同列争议不默认最后一份",
+        "按材料基准封存，基准过期返回 409；同确认标识重试查回同成果与实际片段，重启不换材料"
+      ],
+      "success": "两端齐全无冲突且通过原有校验后，成果进入原版本列表，与一次性整包成果摘要一致",
+      "failure": "缺号、冲突、非严格递增时标或过期基准返回 409；非法登记与片段返回 400，不封存",
+      "verification": "python3 -m echotrace.check_flow batch_intake",
+      "module_ids": [
+        "server",
+        "service",
+        "intake",
+        "intake_store",
+        "archive",
+        "artifacts",
+        "domain",
+        "rules",
+        "intake_panel"
       ]
     },
     {

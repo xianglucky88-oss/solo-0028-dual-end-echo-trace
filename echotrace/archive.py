@@ -17,7 +17,9 @@ class Archive:
                 subject TEXT NOT NULL, payload BLOB NOT NULL)''')
 
     def connect(self):
-        return sqlite3.connect(self.path, timeout=4)
+        db = sqlite3.connect(self.path, timeout=4)
+        db.execute('PRAGMA busy_timeout=4000')
+        return db
 
     def seal(self, packet):
         with closing(self.connect()) as db, db:

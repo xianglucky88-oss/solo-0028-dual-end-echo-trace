@@ -42,6 +42,10 @@
         <button id="inspect">打开目标版本</button><button id="compare">查看差异</button><a class="export-link" id="export" hidden>下载交接资料</a>
       </div>
     </section>
+    <details id="intake-pane" class="intake-pane">
+      <summary>分批收档（两端波形分次补交）</summary>
+      <div id="intake-app"></div>
+    </details>
     <details id="source-pane" class="input-pane"><summary>来源数据</summary><textarea id="source" spellcheck="false" aria-label="观测来源数据"></textarea></details>
   </main>
   <dialog id="detail" aria-labelledby="detail-title"><form method="dialog"><h2 id="detail-title"></h2><button>关闭</button></form><div id="detail-content"></div></dialog>

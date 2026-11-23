@@ -18,6 +18,7 @@ STATIC = {
     '/ui.js': ('ui.js', 'text/javascript'),
     '/chart.js': ('chart.js', 'text/javascript'),
     '/version-panel.js': ('version-panel.js', 'text/javascript'),
+    '/intake-panel.js': ('intake-panel.js', 'text/javascript'),
     '/result-table.js': ('result-table.js', 'text/javascript'),
     '/style.css': ('style.css', 'text/css'),
 }
@@ -70,8 +71,13 @@ class Handler(BaseHTTPRequestHandler):
             self.response((ROOT / 'examples' / (action + '.json')).read_bytes())
         elif action == 'revisions':
             self.response(canonical(wb.archive.list()))
-        elif action.startswith(('packet/', 'export/')):
+        elif action == 'intakes':
+            self.response(canonical(dict(intakes=wb.intakes.list_intakes())))
+        elif action.startswith(('packet/', 'export/', 'intake/')):
             command, key = action.split('/', 1)
+            if command == 'intake':
+                self.response(canonical(wb.intakes.snapshot(key)))
+                return
             packet = wb.read(key)
             filename = f'{CONFIG["namespace"]}-{key[:16]}.json' if command == 'export' else None
             self.response(canonical(packet), filename=filename)
@@ -82,10 +88,16 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self.route(method)
         except ContractError as exc:
-            self.response(canonical({'error': str(exc)}), exc.status)
+            payload = {'error': str(exc)}
+            if exc.extra:
+                payload.update(exc.extra)
+            self.response(canonical(payload), exc.status)
         except sqlite3.OperationalError:
             logging.exception('成果库操作未完成')
             self.response(canonical({'error': '成果库暂时不可写入或读取'}), 503)
+        except sqlite3.IntegrityError:
+            logging.exception('成果库唯一性约束未满足')
+            self.response(canonical({'error': '该材料已收下，请勿重复提交'}), 409)
         except (TimeoutError, BrokenPipeError, ConnectionResetError):
             self.close_connection = True
 

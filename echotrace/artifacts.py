@@ -1,12 +1,6 @@
-import hashlib
-from .contract import canonical, ContractError
-
+from .contract import canonical, ContractError, digest
 
 VERSION = 1
-
-
-def digest(value):
-    return hashlib.sha256(canonical(value)).hexdigest()
 
 
 def make_packet(namespace, source, outputs):

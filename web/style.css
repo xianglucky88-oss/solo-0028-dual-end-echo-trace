@@ -36,3 +36,39 @@ body[data-theme=echo]{--ink:#202b33;--faint:#f0f4f7;--line:#d5e0e8;--accent:#225
 
 .review-pane { margin: .5rem 0; }
 .review-pane > summary { cursor: pointer; font-weight: 650; padding: .45rem 0; }
+
+.intake-pane { border-top: 1px solid var(--line); padding-top: 12px; }
+.intake-pane > summary { cursor: pointer; font-weight: 700; color: var(--accent); padding: .4rem 0; }
+.intake-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin: 12px 0; }
+.intake-card { border: 1px solid var(--line); border-radius: 6px; padding: 14px; background: var(--paper); min-width: 0; }
+.intake-card h3 { margin: 0 0 8px; font-size: 15px; }
+.intake-card textarea { min-height: 180px; margin-top: 6px; }
+.card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.intake-meta { display: grid; gap: 6px; margin-bottom: 8px; }
+.intake-meta label { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.intake-meta code { overflow-wrap: anywhere; font-size: 12px; }
+.side-progress { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 10px 0; }
+.side-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.seq-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.seq-chip { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border-radius: 4px; font-variant-numeric: tabular-nums; font-size: 12px; border: 1px solid var(--line); }
+.chip-covered { background: color-mix(in srgb, var(--accent) 16%, white); color: var(--accent); border-color: var(--accent); }
+.chip-missing { background: var(--faint); color: var(--muted); }
+.chip-quarantine { background: color-mix(in srgb, var(--chart) 16%, white); color: var(--chart); border-color: var(--chart); }
+.receipt-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.receipt-list li { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 3px; }
+.receipt-list li.is-quarantined { opacity: .65; text-decoration: line-through; }
+.state-received, .state-quarantined { font-weight: 700; }
+.state-received { color: var(--accent); }
+.state-quarantined { color: var(--chart); }
+.conflict-card { border: 1px solid var(--chart); border-radius: 6px; padding: 10px 12px; margin: 8px 0; background: color-mix(in srgb, var(--chart) 7%, white); }
+.conflict-card ul { margin: 8px 0; padding-left: 18px; display: grid; gap: 6px; }
+.conflict-card li { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+.quarantine-btn { min-height: 28px; padding: 2px 8px; font-size: 12px; }
+.intake-note { min-height: 1.5em; color: var(--accent); margin: 8px 0 0; }
+.intake-note[data-kind=error] { color: var(--chart); }
+#intake-state.state-ready { color: var(--accent); font-weight: 700; }
+#intake-state.state-blocked { color: var(--chart); font-weight: 700; }
+.intake-list { display: grid; gap: 6px; }
+.intake-list .rowlink { justify-self: start; }

@@ -1,12 +1,23 @@
+import hashlib
 import json
 import math
 import re
 
 
 class ContractError(ValueError):
-    def __init__(self, message, status=400):
+    def __init__(self, message, status=400, extra=None):
         super().__init__(message)
         self.status = status
+        self.extra = extra
+
+
+def digest(value):
+    """对规范化 JSON 计算内容摘要，供成果与回执做内容寻址。"""
+    if isinstance(value, (bytes, bytearray)):
+        blob = bytes(value)
+    else:
+        blob = canonical(value)
+    return hashlib.sha256(blob).hexdigest()
 
 
 def decode(text):
