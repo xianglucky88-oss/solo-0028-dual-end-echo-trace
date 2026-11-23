@@ -2,7 +2,7 @@ from contextlib import closing
 import sqlite3
 from pathlib import Path
 
-from .artifacts import verify_packet
+from .artifacts import digest, verify_packet
 from .contract import canonical, decode, ContractError
 
 
@@ -15,6 +15,9 @@ class Archive:
             db.execute('''CREATE TABLE IF NOT EXISTS packets(
                 seq INTEGER PRIMARY KEY, digest TEXT UNIQUE NOT NULL,
                 subject TEXT NOT NULL, payload BLOB NOT NULL)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS errata(
+                seq INTEGER PRIMARY KEY, number TEXT UNIQUE NOT NULL,
+                digest TEXT NOT NULL, payload BLOB NOT NULL)''')
 
     def connect(self):
         return sqlite3.connect(self.path, timeout=4)
@@ -25,6 +28,29 @@ class Archive:
                                 (packet['digest'], packet['subject'], canonical(packet)))
             record = db.execute('SELECT seq FROM packets WHERE digest=?', (packet['digest'],)).fetchone()
         return dict(digest=packet['digest'], sequence=record[0], created=result.rowcount == 1)
+
+    def seal_errata(self, number, sheet):
+        payload = canonical(sheet)
+        key = digest(sheet)
+        with closing(self.connect()) as db, db:
+            result = db.execute('INSERT OR IGNORE INTO errata(number, digest, payload) VALUES(?,?,?)',
+                                (number, key, payload))
+            record = db.execute('SELECT seq, digest FROM errata WHERE number=?', (number,)).fetchone()
+        if record[1] != key:
+            raise ContractError('同编号勘误单内容不一致，不能覆盖已签发记录', 409)
+        return dict(digest=key, sequence=record[0], created=result.rowcount == 1)
+
+    def read_errata(self, number):
+        with closing(self.connect()) as db:
+            row = db.execute('SELECT payload FROM errata WHERE number=?', (number,)).fetchone()
+        if row is None:
+            raise ContractError('没有这份勘误单', 404)
+        return decode(row[0])
+
+    def list_errata(self):
+        with closing(self.connect()) as db:
+            rows = db.execute('SELECT seq, number, digest FROM errata ORDER BY seq DESC LIMIT 100').fetchall()
+        return [dict(sequence=seq, number=number, digest=key) for seq, number, key in rows]
 
     def list(self):
         with closing(self.connect()) as db:

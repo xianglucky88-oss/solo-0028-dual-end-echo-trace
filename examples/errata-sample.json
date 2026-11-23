@@ -1,0 +1,100 @@
+{
+  "id": "线路-勘",
+  "length": 100,
+  "speed": 0.2,
+  "tolerance": 1.1,
+  "left": {
+    "zero": 10,
+    "dead": 8,
+    "threshold": 0.3,
+    "trace": [
+      {
+        "id": "点0",
+        "time": 0,
+        "value": 0
+      },
+      {
+        "id": "点1",
+        "time": 310,
+        "value": 0
+      },
+      {
+        "id": "点2",
+        "time": 330,
+        "value": -0.8
+      },
+      {
+        "id": "点3",
+        "time": 350,
+        "value": 0
+      },
+      {
+        "id": "点4",
+        "time": 500,
+        "value": 0
+      },
+      {
+        "id": "点5",
+        "time": 800,
+        "value": 0
+      },
+      {
+        "id": "点6",
+        "time": 990,
+        "value": 0
+      },
+      {
+        "id": "点7",
+        "time": 1010,
+        "value": 0.9
+      },
+      {
+        "id": "点8",
+        "time": 1030,
+        "value": 0
+      },
+      {
+        "id": "点9",
+        "time": 1100,
+        "value": 0
+      }
+    ]
+  },
+  "right": {
+    "zero": 20,
+    "dead": 4,
+    "threshold": 0.3,
+    "trace": [
+      {
+        "id": "点0",
+        "time": 20,
+        "value": 0
+      },
+      {
+        "id": "点1",
+        "time": 400,
+        "value": 0
+      },
+      {
+        "id": "点2",
+        "time": 420,
+        "value": 0.8
+      },
+      {
+        "id": "点3",
+        "time": 440,
+        "value": 0
+      },
+      {
+        "id": "点4",
+        "time": 1000,
+        "value": 0
+      },
+      {
+        "id": "点5",
+        "time": 1300,
+        "value": 0
+      }
+    ]
+  }
+}

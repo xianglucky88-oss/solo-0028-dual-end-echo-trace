@@ -25,3 +25,13 @@ python3 -m echotrace.check_flow export
 ### 扩展复核
 
 使用「复核样例」，随后在「扩展复核」切换各项结果。有效输入见 `examples/review-sample.json` 与 `examples/review-alternate.json`。例如运行 `python3 -m echotrace.check_flow capture_gaps` 可核对派生结果、拒绝非法复核和基础版本兼容性。
+
+### 标定勘误
+
+恒速封存的原档可凭有编号的勘误单出修订成果：勘误单只登记从甲端起的各段长度、段速及来源，段长合计必须等于原档缆长，不能顺带修改波形、端头零点或盲区。界面「标定勘误」区可载入 `examples/errata-first.json` 等样例并签发；同一份勘误重试不重复签发，同编号不同内容拒绝覆盖。选中目标版本作为原档后按所选勘误修订，位置、闭合、断档与复测建议一并重算，复测建议附对端所需时标及采样支撑。原档下载地址不变，版本比较标明两侧勘误身份。
+
+```sh
+python3 -m echotrace.check_flow errata
+```
+
+该演练先封存恒速档，再核对补齐两段标定后新成立的闭合、跨段界的采样空洞、两份等值勘误的身份区分，以及原下载仍可复现。

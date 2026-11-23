@@ -81,6 +81,10 @@
     {
       "workflow_id": "revisit_coverage",
       "command": "python3 -m echotrace.check_flow revisit_coverage"
+    },
+    {
+      "workflow_id": "errata",
+      "command": "python3 -m echotrace.check_flow errata"
     }
   ]
 }

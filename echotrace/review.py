@@ -1,10 +1,9 @@
 from .capture import capture_regions, sample_support, supported_visibility
 from .closure_review import closure_quality, competition_groups, polarity_conflicts, revisit_coverage
-from .contract import num
 
 
-def analyze_review(review, model, facts, outputs):
-    limit = num(review.get('max_sample_gap_ns', 120), '采样连续性时差', .001, 1e9)
+def analyze_review(model, facts, outputs):
+    limit = model['sample_gap_limit']
     gaps = capture_regions(model, limit)
     support = sample_support(model, facts, limit)
     visibility = supported_visibility(outputs['visibility'], gaps, outputs['pair'])

@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Thread
 from urllib.error import HTTPError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from .server import CONFIG, PREFIX, ROOT, serve
@@ -92,16 +93,132 @@ def audit(port, flow):
         raise ValueError(f'未知工作流：{flow}')
 
 
+def audit_errata(port):
+    sample = request(port, 'errata-sample')[0]
+    first = request(port, 'errata-first')[0]
+    second = request(port, 'errata-second')[0]
+    number1, number2 = first['id'], second['id']
+
+    original = request(port, 'evaluate', sample)[0]
+    if original['outputs']['pair']:
+        raise ValueError('恒速原档不应已有闭合')
+    sealed = request(port, 'seal', sample)[0]
+    if not sealed['created']:
+        raise ValueError('恒速原档首次封存失败')
+
+    issued = request(port, 'errata', first)[0]
+    again = request(port, 'errata', first)[0]
+    if not issued['created'] or again['created'] or again['sequence'] != issued['sequence'] or again['digest'] != issued['digest']:
+        raise ValueError('同一份勘误因交接重试被重复签发')
+    conflict = dict(first, segments=[dict(row, speed=0.15) for row in first['segments']])
+    request(port, 'errata', conflict, status=409)
+    request(port, 'errata', dict(first, left={'zero': 1}), status=400)
+    listing = request(port, 'errata')[0]
+    if [row['number'] for row in listing] != [number1] or listing[0]['digest'] != issued['digest']:
+        raise ValueError('勘误登记簿没有如实反映已签发记录')
+    sheet = request(port, 'errata/' + quote(number1))[0]
+    if sheet != first:
+        raise ValueError('按编号取回的勘误单与签发内容不一致')
+
+    revised = request(port, 'revise', {'packet': sealed['digest'], 'errata': number1})[0]
+    if not revised['created']:
+        raise ValueError('首次修订没有产生新版本')
+    r1 = request(port, 'packet/' + revised['digest'])[0]
+    for key in ('id', 'length', 'speed', 'tolerance', 'left', 'right'):
+        if r1['source'].get(key) != sample.get(key):
+            raise ValueError(f'修订顺带改动了原档字段：{key}')
+    if r1['source']['calibration']['errata'] != number1 or r1['source']['calibration']['digest'] != issued['digest']:
+        raise ValueError('修订成果没有标明所依据的勘误单')
+    observe(r1['outputs']['pair'], 'left/点7@right/点2', 'position', 80)
+    observe(r1['outputs']['pair'], 'left/点7@right/点2', 'state', 'paired')
+    observe(r1['outputs']['location'], 'left/点7', 'position', 80)
+    observe(r1['outputs']['capture_gaps'], 'left/点4@点5', 'start', 49)
+    observe(r1['outputs']['capture_gaps'], 'left/点4@点5', 'end', 69.5)
+    gap = next(row for row in r1['outputs']['capture_gaps'] if row['id'] == 'left/点4@点5')
+    if not gap['start'] < 60 < gap['end']:
+        raise ValueError('采样空洞应横跨介质段界 60 米')
+    revisit = next(row for row in r1['outputs']['revisit'] if row['id'] == 'left/点2')
+    if revisit['state'] != 'blind' or revisit['evidence']['time'] != 1100 or revisit['evidence']['support'] is not False:
+        raise ValueError('没有采样支撑的复测建议不得只凭几何窗口标为可证')
+
+    changes = request(port, 'compare', {'left': sealed['digest'], 'right': revised['digest']})[0]
+    if any(row['id'].startswith('wave/') for row in changes['rows']):
+        raise ValueError('同一批原样点按身份核对失败：波形被当成改动')
+    if not any(row['id'] == 'pair/left/点7@right/点2' and row['state'] == 'added' for row in changes['rows']):
+        raise ValueError('版本比较没有报告新成立的闭合')
+    if changes['calibration']['left'] is not None or changes['calibration']['right']['errata'] != number1:
+        raise ValueError('版本比较没有标明两侧勘误身份')
+
+    request(port, 'errata', second)
+    revised2 = request(port, 'revise', {'packet': sealed['digest'], 'errata': number2})[0]
+    if revised2['digest'] == revised['digest']:
+        raise ValueError('来源独立的两份勘误不应合并身份')
+    r2 = request(port, 'packet/' + revised2['digest'])[0]
+    if r2['outputs'] != r1['outputs']:
+        raise ValueError('等值勘误回算出的读数应保持一致')
+    equal = request(port, 'compare', {'left': revised['digest'], 'right': revised2['digest']})[0]
+    if equal['rows']:
+        raise ValueError('等值勘误之间不应出现读数差异')
+    if equal['calibration']['left']['errata'] != number1 or equal['calibration']['right']['errata'] != number2:
+        raise ValueError('比较或下载时无法核对选的是哪份勘误')
+
+    retry = request(port, 'revise', {'packet': sealed['digest'], 'errata': number1})[0]
+    if retry['created'] or retry['digest'] != revised['digest']:
+        raise ValueError('同一修订因交接重试被重复签发')
+    bad_sum = {'id': '勘误-2026-丙', 'segments': [
+        {'id': '段1', 'length': 50, 'speed': 0.2, 'source': '介质台账'},
+        {'id': '段2', 'length': 40, 'speed': 0.1, 'source': '介质台账'}]}
+    request(port, 'errata', bad_sum)
+    request(port, 'revise', {'packet': sealed['digest'], 'errata': '勘误-2026-丙'}, status=400)
+    request(port, 'revise', {'packet': sealed['digest'], 'errata': '勘误-不存在'}, status=404)
+    request(port, 'revise', {'packet': revised['digest'], 'errata': number1}, status=409)
+
+    forged = json.loads(json.dumps(r1['source']))
+    forged['left']['trace'][2]['value'] = 0.6
+    forged_seal = request(port, 'seal', forged)[0]
+    exposed = request(port, 'compare', {'left': revised['digest'], 'right': forged_seal['digest']})[0]
+    if not any(row['id'].startswith('wave/') for row in exposed['rows']):
+        raise ValueError('另一批同名样点的波形不应充作标定勘误')
+
+    probe = {
+        'id': '线路-界', 'length': 100, 'speed': 0.2, 'tolerance': 0.5,
+        'left': {'zero': 10, 'dead': 2, 'threshold': 0.3, 'trace': [
+            {'id': '甲0', 'time': 0, 'value': 0}, {'id': '甲1', 'time': 590, 'value': 0},
+            {'id': '甲2', 'time': 610, 'value': 0.8}, {'id': '甲3', 'time': 630, 'value': 0},
+            {'id': '甲4', 'time': 1480, 'value': 0}, {'id': '甲5', 'time': 1500, 'value': 0.7},
+            {'id': '甲6', 'time': 1520, 'value': 0}, {'id': '甲7', 'time': 1600, 'value': 0}]},
+        'right': {'zero': 20, 'dead': 2, 'threshold': 0.3, 'trace': [
+            {'id': '乙0', 'time': 20, 'value': 0}, {'id': '乙1', 'time': 800, 'value': 0},
+            {'id': '乙2', 'time': 820, 'value': 0.9}, {'id': '乙3', 'time': 840, 'value': 0},
+            {'id': '乙4', 'time': 1300, 'value': 0}]},
+        'calibration': {'errata': number1, 'segments': first['segments']}}
+    seen = request(port, 'evaluate', probe)[0]
+    observe(seen['outputs']['pair'], 'left/甲2@right/乙2', 'position', 60)
+    observe(seen['outputs']['pair'], 'left/甲2@right/乙2', 'gap', 0)
+    observe(seen['outputs']['location'], 'left/甲5', 'state', 'outside')
+    observe(seen['outputs']['location'], 'left/甲5', 'position', 104.5)
+
+    exported, headers = request(port, 'export/' + sealed['digest'])
+    if exported != original or 'attachment;' not in headers.get('Content-Disposition', ''):
+        raise ValueError('原下载地址不能复现当时的原档')
+    downloaded = request(port, 'export/' + revised['digest'])[0]
+    if downloaded['source']['calibration']['errata'] != number1:
+        raise ValueError('修订版下载没有标明所依据的勘误单')
+
+
 def main():
     parser = argparse.ArgumentParser(description='运行有界的生产工作流检查')
-    parser.add_argument('flow', choices=[op['id'] for op in CONFIG['operations']]+['seal','compare','export'])
+    parser.add_argument('flow', choices=[op['id'] for op in CONFIG['operations']]+['seal','compare','export','errata'])
     args = parser.parse_args()
     with TemporaryDirectory(prefix=CONFIG['namespace']+'-') as directory:
         with serve(Path(directory)/'observations.sqlite', 0) as server:
             thread = Thread(target=server.serve_forever, daemon=True)
             thread.start()
             try:
-                audit(server.server_port,args.flow)
+                if args.flow == 'errata':
+                    audit_errata(server.server_port)
+                else:
+                    audit(server.server_port,args.flow)
             finally:
                 server.shutdown()
                 thread.join()

@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import logging
 from pathlib import Path
 import sqlite3
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from .archive import Archive
 from .contract import ContractError, canonical, decode
@@ -18,9 +18,12 @@ STATIC = {
     '/ui.js': ('ui.js', 'text/javascript'),
     '/chart.js': ('chart.js', 'text/javascript'),
     '/version-panel.js': ('version-panel.js', 'text/javascript'),
+    '/errata-panel.js': ('errata-panel.js', 'text/javascript'),
     '/result-table.js': ('result-table.js', 'text/javascript'),
     '/style.css': ('style.css', 'text/css'),
 }
+EXAMPLES = ('sample', 'alternate', 'review-sample', 'review-alternate',
+            'errata-sample', 'errata-first', 'errata-second')
 BODY_LIMIT = 512 * 1024
 
 
@@ -66,10 +69,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         if action == 'config':
             self.response(canonical(CONFIG))
-        elif action in ('sample', 'alternate', 'review-sample', 'review-alternate'):
+        elif action in EXAMPLES:
             self.response((ROOT / 'examples' / (action + '.json')).read_bytes())
         elif action == 'revisions':
             self.response(canonical(wb.archive.list()))
+        elif action == 'errata':
+            self.response(canonical(wb.archive.list_errata()))
+        elif action.startswith('errata/'):
+            self.response(canonical(wb.errata_sheet(unquote(action.split('/', 1)[1]))))
         elif action.startswith(('packet/', 'export/')):
             command, key = action.split('/', 1)
             packet = wb.read(key)

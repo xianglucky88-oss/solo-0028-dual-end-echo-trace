@@ -13,6 +13,11 @@
       "responsibility": "解析领域单位与归约事实"
     },
     {
+      "id": "errata",
+      "path": "echotrace/errata.py",
+      "responsibility": "勘误单合同、分段表与签发边界"
+    },
+    {
       "id": "rules",
       "path": "echotrace/rules.py",
       "responsibility": "消费归约证据和约束，产生业务判定"
@@ -86,6 +91,11 @@
       "id": "version_panel",
       "path": "web/version-panel.js",
       "responsibility": "封存选择、版本读取、比对和下载"
+    },
+    {
+      "id": "errata_panel",
+      "path": "web/errata-panel.js",
+      "responsibility": "勘误签发、登记簿刷新与修订发起"
     }
   ],
   "workflows": [
@@ -504,6 +514,38 @@
         "pulses",
         "propagation",
         "pairing"
+      ]
+    },
+    {
+      "id": "errata",
+      "name": "标定勘误",
+      "entry": "POST /echotrace/api/errata、POST /echotrace/api/revise",
+      "steps": [
+        "勘误单只登记编号、分段长度、段速及来源，段长合计必须等于原档缆长",
+        "同一份勘误重试不重复签发，同编号不同内容不覆盖",
+        "修订按分段往返时长重算位置、闭合、断档与复测建议，复测附对端时标及采样支撑",
+        "比较与下载标明勘误身份，同一批原样点按身份核对，原下载仍可复现"
+      ],
+      "success": "两段标定后新成立的闭合、跨段界采样空洞与两份等值勘误均核对通过",
+      "failure": "段长合计不符返回 400；同编号不同内容返回 409；未知勘误返回 404",
+      "verification": "python3 -m echotrace.check_flow errata",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "errata",
+        "rules",
+        "review",
+        "capture",
+        "closure_review",
+        "reconcile",
+        "archive",
+        "artifacts",
+        "propagation",
+        "pairing",
+        "version_panel",
+        "errata_panel",
+        "result_table"
       ]
     }
   ],

@@ -1,4 +1,5 @@
 from .contract import invariant, num, obj, records, unique_order
+from .errata import parse_calibration
 from .propagation import capture_window, locate
 from .pulses import extract_pulses
 
@@ -16,7 +17,14 @@ def parse(source):
         sides[side]=dict(trace=trace,zero=num(data.get('zero'),'端头零点（纳秒）',0),
                          dead=num(data.get('dead'),'端头盲区（米）',0,length),
                          threshold=num(data.get('threshold'),'脉冲幅值门限',0.001,1))
-    return dict(length=length,speed=speed,tolerance=tolerance,sides=sides)
+    model=dict(length=length,speed=speed,tolerance=tolerance,sides=sides,sample_gap_limit=120)
+    review=source.get('review')
+    if review is not None:
+        model['sample_gap_limit']=num(obj(review,'复核数据').get('max_sample_gap_ns',120),'采样连续性时差',.001,1e9)
+    calibration=source.get('calibration')
+    if calibration is not None:
+        model['segments']=parse_calibration(calibration,length)['segments']
+    return model
 
 
 def evaluate(model):

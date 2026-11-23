@@ -28,6 +28,13 @@ def rows_for(packet, operation):
     return outputs.get(key, []) if operation.get('optional') else outputs[key]
 
 
+def calibration_of(packet):
+    calibration = packet['source'].get('calibration')
+    if not isinstance(calibration, dict):
+        return None
+    return dict(errata=calibration.get('errata'), digest=calibration.get('digest'))
+
+
 def compare(left, right, operations):
     if left['subject'] != right['subject']:
         raise ContractError('两份成果不属于同一对象，不能直接比对', 409)
@@ -44,4 +51,5 @@ def compare(left, right, operations):
                 continue
             state = 'added' if before is None else 'removed' if after is None else 'changed'
             output.append(dict(id=f'{key}/{row_id}', stage=spec['label'], state=state, before=before, after=after))
-    return dict(subject=left['subject'], left=left['digest'], right=right['digest'], rows=output)
+    return dict(subject=left['subject'], left=left['digest'], right=right['digest'], rows=output,
+                calibration=dict(left=calibration_of(left), right=calibration_of(right)))

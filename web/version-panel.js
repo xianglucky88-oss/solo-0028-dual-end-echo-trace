@@ -36,7 +36,7 @@ export function versionPanel(request, base) {
     const left = document.getElementById('left-version').value, right = document.getElementById('right-version').value;
     if (!left || !right) throw new Error('先选择两个版本');
     const result = await request('compare', { left, right });
-    return { left, right, rows: result.rows };
+    return { left, right, rows: result.rows, calibration: result.calibration };
   }
 
   document.getElementById('right-version').addEventListener('change', updateExport);

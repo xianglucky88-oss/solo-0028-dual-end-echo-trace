@@ -20,7 +20,7 @@
     <p id="status" role="status" aria-live="polite">读取本地数据…</p>
     <div class="work">
       <section class="plot">
-        <div class="plot-title"><h2>甲端与乙端台架回波</h2><code><span id="subject">—</span> · <span id="digest">—</span></code></div>
+        <div class="plot-title"><h2>甲端与乙端台架回波</h2><code><span id="subject">—</span> · <span id="digest">—</span> · <span id="calibration">恒速原档</span></code></div>
         <svg id="visual" role="img" aria-label="甲端与乙端台架回波" viewBox="0 0 720 238"></svg>
       </section>
       <nav id="stages" class="stage-list" aria-label="归约阶段"></nav>
@@ -41,6 +41,16 @@
         <label>目标版本<select id="right-version"></select></label>
         <button id="inspect">打开目标版本</button><button id="compare">查看差异</button><a class="export-link" id="export" hidden>下载交接资料</a>
       </div>
+    </section>
+    <section class="errata">
+      <h2>标定勘误 <span id="errata-count"></span></h2>
+      <div class="revision-tools">
+        <button id="errata-sample-1">勘误样例一</button><button id="errata-sample-2">勘误样例二</button>
+        <button id="errata-seal" class="primary">签发勘误单</button>
+        <label>已签发勘误<select id="errata-list"></select></label>
+        <button id="revise">按所选勘误修订目标版本</button>
+      </div>
+      <details class="input-pane"><summary>勘误单数据</summary><textarea id="errata-source" spellcheck="false" aria-label="勘误单数据"></textarea></details>
     </section>
     <details id="source-pane" class="input-pane"><summary>来源数据</summary><textarea id="source" spellcheck="false" aria-label="观测来源数据"></textarea></details>
   </main>

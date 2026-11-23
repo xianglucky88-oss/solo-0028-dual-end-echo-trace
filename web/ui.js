@@ -1,6 +1,7 @@
 import { draw } from '/chart.js';
 import { renderRows } from '/result-table.js';
 import { versionPanel } from '/version-panel.js';
+import { errataPanel } from '/errata-panel.js';
 
 const $ = (id) => document.getElementById(id);
 const base = document.body.dataset.prefix;
@@ -36,6 +37,7 @@ function show(next) {
   packet = next;
   $('subject').textContent = next.subject;
   $('digest').textContent = next.digest.slice(0, 12);
+  $('calibration').textContent = next.source.calibration ? `勘误 ${next.source.calibration.errata}` : '恒速原档';
   draw($('visual'), next, model);
   const review = Object.hasOwn(next.source, 'review');
   $('review-pane').hidden = !review;
@@ -84,6 +86,7 @@ function bind(id, action, event = 'click') {
 guarded(async () => {
   model = await request('config');
   const versions = versionPanel(request, base);
+  const errata = errataPanel(request);
   for (const spec of model.operations) {
     const button = document.createElement('button');
     button.textContent = spec.label;
@@ -120,12 +123,39 @@ guarded(async () => {
     note('已打开封存版本');
   });
   bind('compare', async () => {
-    const { left, right, rows } = await versions.compare();
+    const { left, right, rows, calibration } = await versions.compare();
     for (const button of stageButtons()) button.setAttribute('aria-pressed', 'false');
     $('table-title').textContent = '版本差异';
     renderRows(model, rows, ['id', 'stage', 'state', 'before', 'after'], '差异', { ...model.columns, before: '参照版本', after: '目标版本' });
-    note(`已比较 ${left.slice(0, 8)} 与 ${right.slice(0, 8)}`);
+    const tag = (side) => (side && side.errata ? `勘误 ${side.errata}` : '恒速原档');
+    note(`已比较 ${left.slice(0, 8)} 与 ${right.slice(0, 8)}：${tag(calibration?.left)} → ${tag(calibration?.right)}`);
   });
+  const loadErrata = async (path) => {
+    $('errata-source').value = JSON.stringify(await request(path), null, 2);
+    note('勘误样例已载入，可签发');
+  };
+  bind('errata-sample-1', () => loadErrata('errata-first'));
+  bind('errata-sample-2', () => loadErrata('errata-second'));
+  bind('errata-seal', async () => {
+    let sheet;
+    try {
+      sheet = JSON.parse($('errata-source').value);
+    } catch {
+      throw new Error('勘误单不是有效的 JSON');
+    }
+    const result = await errata.register(sheet);
+    note(result.created ? `勘误 ${result.number} 已签发` : `勘误 ${result.number} 与已签发内容一致，未重复签发`);
+  });
+  bind('revise', async () => {
+    const basis = $('right-version').value;
+    if (!basis) throw new Error('先在目标版本选择恒速原档');
+    if (!errata.selected()) throw new Error('先选择已签发的勘误单');
+    const result = await request('revise', { packet: basis, errata: errata.selected() });
+    await versions.refresh(result.digest);
+    show(await request(`packet/${result.digest}`));
+    note(result.created ? `已按勘误封存修订版（第 ${result.sequence} 版）` : '相同修订已存在，未重复封存');
+  });
+  await errata.refresh();
   await versions.refresh();
   await choose('sample');
 });

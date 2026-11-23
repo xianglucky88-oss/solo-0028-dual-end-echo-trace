@@ -27,11 +27,13 @@
 | 版本差图 | `POST /echotrace/api/compare` | 异版产生差异，同版无差异，跨对象拒绝 |
 | 封存版本 | `POST /echotrace/api/seal` | 同输入仅写入一次，旧版不随对照改变 |
 | 导出交接 | `GET /echotrace/api/export/<摘要>` | 下载头有效且内容完整保留历史快照 |
+| 标定勘误 | `POST /echotrace/api/errata`、`POST /echotrace/api/revise` | 重试不重复签发，冲突不覆盖，修订可复查 |
 
 ## 职责
 
 - `echotrace/contract.py`：JSON 与领域字段边界。
 - `echotrace/domain.py`：解析领域单位与归约事实。
+- `echotrace/errata.py`：勘误单合同、分段表与签发边界。
 - `echotrace/rules.py`：消费归约证据和约束，产生业务判定。
 - `echotrace/artifacts.py`：成果规范编码、摘要与差分。
 - `echotrace/archive.py`：SQLite 历史版本与原子封存。
@@ -53,3 +55,11 @@
 - `polarity_review` 反极性近邻：只列未解且几何接近的反极性候选，不作为配对。
 - `closure_quality` 闭合证据质量：配对结论与两侧样点密度分开标示。
 - `revisit_coverage` 复测落点支撑：按预定复测端折回全局坐标并核对真实采样支撑。
+
+## 标定勘误
+
+恒速封存的原档可经有编号的勘误单修订。勘误单只登记编号、从甲端起的各段长度、段速及来源，段长合计必须等于原档缆长；不许顺带修改波形、端头零点或盲区。`POST /echotrace/api/errata` 签发勘误单：同一份勘误因交接重试不重复签发，同编号但内容不同返回 409 且不覆盖；`GET /echotrace/api/errata` 与 `GET /echotrace/api/errata/<编号>` 核对登记簿与已签发内容。
+
+`POST /echotrace/api/revise` 以原档摘要与勘误编号出修订成果并封存。两端各自按分段往返时长换算到甲端里程，正好到介质交界处只落在一个坐标，越界不吸附。位置、闭合、断档与复测建议按修订口径一起重算；复测建议附对端所需的时标及该时标是否实有采样支撑，原档没有采样支撑证据时不得只凭几何窗口标为可证。修订成果与复核扩展一并重算，来源数据保留原档全部字段并附勘误编号、勘误摘要与分段。
+
+原下载地址仍给出当时的原档；版本比较入口标明两侧勘误身份，对同一批原样点按身份核对，不把旧闭合消失或位置数值变化解释成回波真的移动，另一批同名样点的波形不能充作标定勘误。两份来源独立的勘误单给出相同段速时回算读数相同，但比较或下载可核对选的是哪份勘误。演练：`python3 -m echotrace.check_flow errata`。
