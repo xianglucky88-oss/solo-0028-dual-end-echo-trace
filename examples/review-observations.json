@@ -1,0 +1,58 @@
+{
+  "capture_gaps": [
+    "left/点2@点3",
+    "start",
+    8,
+    "left/点2@点3",
+    null,
+    null
+  ],
+  "capture_view": [
+    "capture-1",
+    "state",
+    "blind",
+    "capture-1",
+    "state",
+    "right"
+  ],
+  "peak_support": [
+    "left/点3",
+    "state",
+    "sparse",
+    "left/点3",
+    "state",
+    "supported"
+  ],
+  "competition": [
+    "left/点3",
+    null,
+    null,
+    "left/点3",
+    "right_count",
+    2
+  ],
+  "polarity_review": [
+    "left/点5@right/点3",
+    "position",
+    60.0,
+    "left/点5@right/点3",
+    null,
+    null
+  ],
+  "closure_quality": [
+    "left/点3@right/点5",
+    "state",
+    "sparse",
+    "left/点5@right/点3",
+    "state",
+    "supported"
+  ],
+  "revisit_coverage": [
+    "left/点1",
+    "state",
+    "blind",
+    "left/点1",
+    "state",
+    "blind"
+  ]
+}

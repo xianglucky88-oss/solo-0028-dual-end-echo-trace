@@ -1,0 +1,86 @@
+{
+  "language": "Python 3.11+ / JavaScript ES modules",
+  "project_shape": "fullstack",
+  "source_extensions": [
+    ".py",
+    ".js",
+    ".css",
+    ".html"
+  ],
+  "build_command": "python3 -m compileall -q echotrace && node --input-type=module --check < web/ui.js && node --input-type=module --check < web/chart.js && node --input-type=module --check < web/result-table.js && node --input-type=module --check < web/version-panel.js",
+  "testing": "deferred",
+  "workflow_checks": [
+    {
+      "workflow_id": "wave",
+      "command": "python3 -m echotrace.check_flow wave"
+    },
+    {
+      "workflow_id": "peak",
+      "command": "python3 -m echotrace.check_flow peak"
+    },
+    {
+      "workflow_id": "location",
+      "command": "python3 -m echotrace.check_flow location"
+    },
+    {
+      "workflow_id": "window",
+      "command": "python3 -m echotrace.check_flow window"
+    },
+    {
+      "workflow_id": "pair",
+      "command": "python3 -m echotrace.check_flow pair"
+    },
+    {
+      "workflow_id": "pending",
+      "command": "python3 -m echotrace.check_flow pending"
+    },
+    {
+      "workflow_id": "revisit",
+      "command": "python3 -m echotrace.check_flow revisit"
+    },
+    {
+      "workflow_id": "visibility",
+      "command": "python3 -m echotrace.check_flow visibility"
+    },
+    {
+      "workflow_id": "compare",
+      "command": "python3 -m echotrace.check_flow compare"
+    },
+    {
+      "workflow_id": "seal",
+      "command": "python3 -m echotrace.check_flow seal"
+    },
+    {
+      "workflow_id": "export",
+      "command": "python3 -m echotrace.check_flow export"
+    },
+    {
+      "workflow_id": "capture_gaps",
+      "command": "python3 -m echotrace.check_flow capture_gaps"
+    },
+    {
+      "workflow_id": "capture_view",
+      "command": "python3 -m echotrace.check_flow capture_view"
+    },
+    {
+      "workflow_id": "peak_support",
+      "command": "python3 -m echotrace.check_flow peak_support"
+    },
+    {
+      "workflow_id": "competition",
+      "command": "python3 -m echotrace.check_flow competition"
+    },
+    {
+      "workflow_id": "polarity_review",
+      "command": "python3 -m echotrace.check_flow polarity_review"
+    },
+    {
+      "workflow_id": "closure_quality",
+      "command": "python3 -m echotrace.check_flow closure_quality"
+    },
+    {
+      "workflow_id": "revisit_coverage",
+      "command": "python3 -m echotrace.check_flow revisit_coverage"
+    }
+  ]
+}

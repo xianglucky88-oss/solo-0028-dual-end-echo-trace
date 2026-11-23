@@ -1,0 +1,523 @@
+{
+  "project_name": "solo-0028-dual-end-echo-trace",
+  "project_shape": "fullstack",
+  "modules": [
+    {
+      "id": "contract",
+      "path": "echotrace/contract.py",
+      "responsibility": "JSON 与领域字段边界"
+    },
+    {
+      "id": "domain",
+      "path": "echotrace/domain.py",
+      "responsibility": "解析领域单位与归约事实"
+    },
+    {
+      "id": "rules",
+      "path": "echotrace/rules.py",
+      "responsibility": "消费归约证据和约束，产生业务判定"
+    },
+    {
+      "id": "artifacts",
+      "path": "echotrace/artifacts.py",
+      "responsibility": "成果规范编码、摘要与差分"
+    },
+    {
+      "id": "archive",
+      "path": "echotrace/archive.py",
+      "responsibility": "SQLite 历史版本与原子封存"
+    },
+    {
+      "id": "service",
+      "path": "echotrace/service.py",
+      "responsibility": "串联归约、比对和历史读取"
+    },
+    {
+      "id": "server",
+      "path": "echotrace/server.py",
+      "responsibility": "本机 HTTP 及静态界面入口"
+    },
+    {
+      "id": "workbench",
+      "path": "web/ui.js",
+      "responsibility": "页面状态、样例归约、视图切换与图形编排"
+    },
+    {
+      "id": "reconcile",
+      "path": "echotrace/reconcile.py",
+      "responsibility": "联合原始归约事实与业务判定，推导双端可见区"
+    },
+    {
+      "id": "capture",
+      "path": "echotrace/capture.py",
+      "responsibility": "复核证据归约"
+    },
+    {
+      "id": "review",
+      "path": "echotrace/review.py",
+      "responsibility": "编排按领域事实驱动的可选复核"
+    },
+    {
+      "id": "closure_review",
+      "path": "echotrace/closure_review.py",
+      "responsibility": "复核证据归约"
+    },
+    {
+      "id": "pulses",
+      "path": "echotrace/pulses.py",
+      "responsibility": "滑窗提取局部脉冲及邻点证据"
+    },
+    {
+      "id": "propagation",
+      "path": "echotrace/propagation.py",
+      "responsibility": "端头时延、统一里程和采样窗口"
+    },
+    {
+      "id": "pairing",
+      "path": "echotrace/pairing.py",
+      "responsibility": "双端同极候选与双向唯一闭合"
+    },
+    {
+      "id": "result_table",
+      "path": "web/result-table.js",
+      "responsibility": "结果表及结构化证据明细"
+    },
+    {
+      "id": "version_panel",
+      "path": "web/version-panel.js",
+      "responsibility": "封存选择、版本读取、比对和下载"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "wave",
+      "name": "原始波形",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.wave",
+      "steps": [
+        "逐端严格校验时标与长度",
+        "left/点1 的 时刻 为 40"
+      ],
+      "success": "left/点1 的 时刻 为 40",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow wave",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table"
+      ]
+    },
+    {
+      "id": "peak",
+      "name": "脉冲提取",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.peak",
+      "steps": [
+        "门限及左右邻点确定局部峰极性",
+        "left/点1 的 状态 为 \"positive\""
+      ],
+      "success": "left/点1 的 状态 为 \"positive\"",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow peak",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "pulses"
+      ]
+    },
+    {
+      "id": "location",
+      "name": "距离归一",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.location",
+      "steps": [
+        "往返时延与各自零点共同确定距离",
+        "left/点1 的 状态 为 \"masked\""
+      ],
+      "success": "left/点1 的 状态 为 \"masked\"",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow location",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation"
+      ]
+    },
+    {
+      "id": "window",
+      "name": "盲区遮蔽",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.window",
+      "steps": [
+        "近端不可见与有样本无异常不同",
+        "right 的 起点 为 4"
+      ],
+      "success": "right 的 起点 为 4",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow window",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "propagation"
+      ]
+    },
+    {
+      "id": "pair",
+      "name": "两端配对",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.pair",
+      "steps": [
+        "合法候选用距离闭合与极性约束",
+        "left/点3@right/点5 的 甲端基准位置 为 30"
+      ],
+      "success": "left/点3@right/点5 的 甲端基准位置 为 30",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow pair",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "pending",
+      "name": "歧义定位",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.pending",
+      "steps": [
+        "有多个可行对应不伪造一对一位置",
+        "left/点5 的 状态 为 \"unconfirmed\""
+      ],
+      "success": "left/点5 的 状态 为 \"unconfirmed\"",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow pending",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "revisit",
+      "name": "复测路径",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.revisit",
+      "steps": [
+        "依对端覆盖与冲突原因给待做清单",
+        "left/点1 的 状态 为 \"masked\""
+      ],
+      "success": "left/点1 的 状态 为 \"masked\"",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow revisit",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "visibility",
+      "name": "双端可见区",
+      "entry": "POST /echotrace/api/evaluate 的 outputs.visibility",
+      "steps": [
+        "两端窗口投影至甲端坐标后分段，区分窗口内部可见的端头集合，并附落在区间内部的闭合证据；可见不等于排除异常。",
+        "view-2 的 终点 为 96"
+      ],
+      "success": "view-2 的 终点 为 96",
+      "failure": "非法领域数据返回 400；不产生伪造结果",
+      "verification": "python3 -m echotrace.check_flow visibility",
+      "module_ids": [
+        "server",
+        "contract",
+        "service",
+        "domain",
+        "rules",
+        "reconcile",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "compare",
+      "name": "版本差图",
+      "entry": "POST /echotrace/api/compare",
+      "steps": [
+        "逐端标识与全局距离是不同对比量",
+        "异版产生差异，同版无差异，跨对象拒绝"
+      ],
+      "success": "异版产生差异，同版无差异，跨对象拒绝",
+      "failure": "跨对象比对返回 409",
+      "verification": "python3 -m echotrace.check_flow compare",
+      "module_ids": [
+        "server",
+        "service",
+        "archive",
+        "artifacts",
+        "version_panel",
+        "result_table"
+      ]
+    },
+    {
+      "id": "seal",
+      "name": "封存版本",
+      "entry": "POST /echotrace/api/seal",
+      "steps": [
+        "固定测线参数与两端原始证据",
+        "同输入仅写入一次，旧版不随对照改变"
+      ],
+      "success": "同输入仅写入一次，旧版不随对照改变",
+      "failure": "非法输入不写入",
+      "verification": "python3 -m echotrace.check_flow seal",
+      "module_ids": [
+        "server",
+        "service",
+        "archive",
+        "artifacts",
+        "version_panel",
+        "result_table"
+      ]
+    },
+    {
+      "id": "export",
+      "name": "导出交接",
+      "entry": "GET /echotrace/api/export/<摘要>",
+      "steps": [
+        "回放历史而非读取设备",
+        "下载头有效且内容完整保留历史快照"
+      ],
+      "success": "下载头有效且内容完整保留历史快照",
+      "failure": "未知版本返回 404",
+      "verification": "python3 -m echotrace.check_flow export",
+      "module_ids": [
+        "server",
+        "service",
+        "archive",
+        "artifacts",
+        "version_panel"
+      ]
+    },
+    {
+      "id": "capture_gaps",
+      "name": "采样断档",
+      "entry": "POST /echotrace/api/evaluate → outputs.capture_gaps",
+      "steps": [
+        "长时差映射到统一位置并裁去盲端与带外范围",
+        "把归约值、状态和来源明细写入 outputs.capture_gaps，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow capture_gaps",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "capture",
+        "artifacts",
+        "result_table",
+        "propagation"
+      ]
+    },
+    {
+      "id": "capture_view",
+      "name": "有采样支撑的可见区",
+      "entry": "POST /echotrace/api/evaluate → outputs.capture_view",
+      "steps": [
+        "以采样缺口再拆分标定可见区，保留两种证据口径",
+        "把归约值、状态和来源明细写入 outputs.capture_view，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow capture_view",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "capture",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "peak_support",
+      "name": "邻样点支撑",
+      "entry": "POST /echotrace/api/evaluate → outputs.peak_support",
+      "steps": [
+        "两个相邻时差分别进入峰形支撑，任意侧过稀即降级",
+        "把归约值、状态和来源明细写入 outputs.peak_support，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow peak_support",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "capture",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "competition",
+      "name": "闭合争用组",
+      "entry": "POST /echotrace/api/evaluate → outputs.competition",
+      "steps": [
+        "保留双侧候选图分量，不从人数相等推出唯一配对",
+        "把归约值、状态和来源明细写入 outputs.competition，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow competition",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "closure_review",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "polarity_review",
+      "name": "反极性近邻",
+      "entry": "POST /echotrace/api/evaluate → outputs.polarity_review",
+      "steps": [
+        "只列未解且几何接近的反极性候选，不作为配对",
+        "把归约值、状态和来源明细写入 outputs.polarity_review，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow polarity_review",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "closure_review",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "closure_quality",
+      "name": "闭合证据质量",
+      "entry": "POST /echotrace/api/evaluate → outputs.closure_quality",
+      "steps": [
+        "配对结论与两侧样点密度分开标示",
+        "把归约值、状态和来源明细写入 outputs.closure_quality，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow closure_quality",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "closure_review",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    },
+    {
+      "id": "revisit_coverage",
+      "name": "复测落点支撑",
+      "entry": "POST /echotrace/api/evaluate → outputs.revisit_coverage",
+      "steps": [
+        "按预定复测端折回全局坐标并核对真实采样支撑",
+        "把归约值、状态和来源明细写入 outputs.revisit_coverage，随增强包封存并供历史回读"
+      ],
+      "success": "业务样例与对照的值和证据契合固定观测",
+      "failure": "复核输入引用非法或超出边界时返回 400；不封存",
+      "verification": "python3 -m echotrace.check_flow revisit_coverage",
+      "module_ids": [
+        "server",
+        "service",
+        "domain",
+        "rules",
+        "review",
+        "closure_review",
+        "artifacts",
+        "result_table",
+        "pulses",
+        "propagation",
+        "pairing"
+      ]
+    }
+  ],
+  "complexity": {
+    "mechanisms": [
+      "error_propagation",
+      "capacity",
+      "policy_rules",
+      "lineage",
+      "export_freeze",
+      "versioning_audit",
+      "idempotency",
+      "batch_transaction",
+      "snapshot_consistency"
+    ]
+  }
+}

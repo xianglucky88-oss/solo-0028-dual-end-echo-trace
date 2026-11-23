@@ -1,0 +1,66 @@
+{
+  "wave": [
+    "left/点1",
+    "time",
+    40,
+    "right/重峰",
+    "value",
+    0.8
+  ],
+  "peak": [
+    "left/点1",
+    "state",
+    "positive",
+    "right/点3",
+    "state",
+    "negative"
+  ],
+  "location": [
+    "left/点1",
+    "state",
+    "masked",
+    "right/点5",
+    "position",
+    30
+  ],
+  "window": [
+    "right",
+    "start",
+    4,
+    "right",
+    "end",
+    100
+  ],
+  "pair": [
+    "left/点3@right/点5",
+    "position",
+    30,
+    "left/点5@right/点3",
+    "position",
+    60
+  ],
+  "pending": [
+    "left/点5",
+    "state",
+    "unconfirmed",
+    "left/点3",
+    "state",
+    "ambiguous"
+  ],
+  "revisit": [
+    "left/点1",
+    "state",
+    "masked",
+    "left/点3",
+    "side",
+    "right"
+  ],
+  "visibility": [
+    "view-2",
+    "end",
+    96,
+    "view-2",
+    "end",
+    88
+  ]
+}

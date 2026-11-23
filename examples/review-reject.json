@@ -1,0 +1,103 @@
+{
+  "id": "线路-丙",
+  "length": 100,
+  "speed": 0.2,
+  "tolerance": 1.1,
+  "left": {
+    "zero": 10,
+    "dead": 8,
+    "threshold": 0.3,
+    "trace": [
+      {
+        "id": "点0",
+        "time": 0,
+        "value": 0
+      },
+      {
+        "id": "点1",
+        "time": 40,
+        "value": 0.7
+      },
+      {
+        "id": "点2",
+        "time": 65,
+        "value": 0
+      },
+      {
+        "id": "点3",
+        "time": 310,
+        "value": 0.9
+      },
+      {
+        "id": "点4",
+        "time": 330,
+        "value": 0
+      },
+      {
+        "id": "点5",
+        "time": 610,
+        "value": -0.8
+      },
+      {
+        "id": "点6",
+        "time": 630,
+        "value": 0
+      },
+      {
+        "id": "点7",
+        "time": 1010,
+        "value": 0
+      }
+    ]
+  },
+  "right": {
+    "zero": 20,
+    "dead": 4,
+    "threshold": 0.3,
+    "trace": [
+      {
+        "id": "点0",
+        "time": 20,
+        "value": 0
+      },
+      {
+        "id": "点1",
+        "time": 215,
+        "value": 0.4
+      },
+      {
+        "id": "点2",
+        "time": 230,
+        "value": 0
+      },
+      {
+        "id": "点3",
+        "time": 420,
+        "value": 0.8
+      },
+      {
+        "id": "点4",
+        "time": 440,
+        "value": 0
+      },
+      {
+        "id": "点5",
+        "time": 720,
+        "value": 0.9
+      },
+      {
+        "id": "点6",
+        "time": 730,
+        "value": 0
+      },
+      {
+        "id": "点7",
+        "time": 1020,
+        "value": 0
+      }
+    ]
+  },
+  "review": {
+    "max_sample_gap_ns": -1
+  }
+}

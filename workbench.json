@@ -1,0 +1,280 @@
+{
+  "namespace": "echotrace",
+  "title": "电缆双端回波复核台",
+  "port": 8865,
+  "theme": "echo",
+  "plot": "甲端与乙端台架回波",
+  "operations": [
+    {
+      "id": "wave",
+      "label": "原始波形",
+      "columns": [
+        "id",
+        "side",
+        "time",
+        "value",
+        "state"
+      ]
+    },
+    {
+      "id": "peak",
+      "label": "局部脉冲",
+      "columns": [
+        "id",
+        "side",
+        "time",
+        "value",
+        "state"
+      ]
+    },
+    {
+      "id": "location",
+      "label": "单端位置",
+      "columns": [
+        "id",
+        "side",
+        "distance",
+        "position",
+        "polarity",
+        "state"
+      ]
+    },
+    {
+      "id": "window",
+      "label": "可见边界",
+      "columns": [
+        "id",
+        "start",
+        "end",
+        "state"
+      ]
+    },
+    {
+      "id": "pair",
+      "label": "两端配对",
+      "columns": [
+        "id",
+        "position",
+        "gap",
+        "polarity",
+        "state",
+        "evidence"
+      ]
+    },
+    {
+      "id": "pending",
+      "label": "待定位点",
+      "columns": [
+        "id",
+        "side",
+        "position",
+        "state",
+        "evidence"
+      ]
+    },
+    {
+      "id": "revisit",
+      "label": "复测安排",
+      "columns": [
+        "id",
+        "side",
+        "distance",
+        "state",
+        "evidence"
+      ]
+    },
+    {
+      "id": "visibility",
+      "label": "双端可见区",
+      "columns": [
+        "id",
+        "start",
+        "end",
+        "length",
+        "state",
+        "evidence"
+      ]
+    },
+    {
+      "id": "capture_gaps",
+      "label": "采样断档",
+      "columns": [
+        "id",
+        "side",
+        "start",
+        "end",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "capture_view",
+      "label": "有采样支撑的可见区",
+      "columns": [
+        "id",
+        "start",
+        "end",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "peak_support",
+      "label": "邻样点支撑",
+      "columns": [
+        "id",
+        "side",
+        "time",
+        "lo",
+        "hi",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "competition",
+      "label": "闭合争用组",
+      "columns": [
+        "id",
+        "left_count",
+        "right_count",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "polarity_review",
+      "label": "反极性近邻",
+      "columns": [
+        "id",
+        "position",
+        "gap",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "closure_quality",
+      "label": "闭合证据质量",
+      "columns": [
+        "id",
+        "position",
+        "gap",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    },
+    {
+      "id": "revisit_coverage",
+      "label": "复测落点支撑",
+      "columns": [
+        "id",
+        "side",
+        "position",
+        "state",
+        "evidence"
+      ],
+      "optional": true
+    }
+  ],
+  "values": {
+    "blind": "缺少可用数据",
+    "covered": "已覆盖",
+    "candidate": "有候选",
+    "outside": "超出范围",
+    "ambiguous": "归属不唯一",
+    "observed": "已观测",
+    "negative": "负",
+    "masked": "处于盲区",
+    "paired": "两端闭合",
+    "unconfirmed": "未确认",
+    "positive": "正",
+    "left": "甲端",
+    "right": "乙端",
+    "added": "新增",
+    "removed": "已移除",
+    "changed": "已变化",
+    "dual": "双端可见",
+    "fits": "有产量",
+    "split": "跨带分摊",
+    "kept": "保留",
+    "scrap": "边料",
+    "single": "单通道",
+    "ensemble": "合奏",
+    "silent": "无开管",
+    "supported": "有支撑",
+    "stable": "稳定",
+    "drift": "偏移不一致",
+    "review": "交接复核",
+    "revisit": "需要复测",
+    "shared": "多处复用",
+    "same": "口径一致",
+    "refined": "区间收窄",
+    "recovered": "恢复量化",
+    "carried": "传播缺测",
+    "local": "局部缺测",
+    "opposed": "方向不符",
+    "sparse": "邻点稀疏",
+    "unbalanced": "双端峰数不对称",
+    "cycle": "完整循环",
+    "sequence": "序列未闭合",
+    "marked": "有标记"
+  },
+  "columns": {
+    "distance": "单端距离",
+    "end": "终点",
+    "evidence": "来源证据",
+    "gap": "闭合差",
+    "id": "标识",
+    "length": "长度",
+    "polarity": "极性",
+    "position": "甲端基准位置",
+    "side": "端头",
+    "stage": "归约阶段",
+    "start": "起点",
+    "state": "状态",
+    "time": "时刻",
+    "value": "读数",
+    "before": "早版",
+    "after": "晚版",
+    "origin": "母卷纵向区间",
+    "sample": "取样编号",
+    "observed": "已观测",
+    "modeled": "模型池量",
+    "assigned": "已归属",
+    "pending": "待核对",
+    "relative": "相对音分差",
+    "rate_lo": "通量下界",
+    "rate_hi": "通量上界",
+    "area": "面积",
+    "total": "理论总量",
+    "kept": "保留宽度",
+    "lost": "边料宽度",
+    "used": "占用长度",
+    "remainder": "余量",
+    "candidates": "候选数",
+    "spread": "最大音分差",
+    "exclusive": "单候选数",
+    "h0": "起水位",
+    "h1": "止水位",
+    "source": "供水记录",
+    "gate": "门位",
+    "prior_lo": "原下界",
+    "prior_hi": "原上界",
+    "known": "已知数",
+    "left_count": "甲端峰数",
+    "right_count": "乙端峰数",
+    "mixed": "双因禁保长度",
+    "eligible": "可保长度",
+    "blocked": "重大疵点长度",
+    "blind": "缺检长度"
+  },
+  "reconciliation": "visibility",
+  "defaultOperation": "pair"
+}
