@@ -1,4 +1,7 @@
+from datetime import datetime, timezone
+
 from . import artifacts, domain, reconcile, rules
+from . import inventory
 from .review import analyze_review
 from .contract import ContractError, ident, obj
 
@@ -29,6 +32,8 @@ class Workbench:
             before = self.read(body.get('left'))
             after = self.read(body.get('right'))
             return artifacts.compare(before, after, self.config['operations'])
+        if command == 'inventory':
+            return self.issue_inventory(body)
         raise ContractError('没有这个处理入口', 404)
 
     def read(self, key):
@@ -38,3 +43,33 @@ class Workbench:
         if packet['project'] != self.config['namespace']:
             raise ContractError('该成果属于另一数据工作台', 409)
         return packet
+
+    def _verified(self, key):
+        """完整性核对回调；失败转成盘点模块的不可读信号，不回退旧包。"""
+        try:
+            return self.read(key)
+        except ContractError as exc:
+            if exc.status == 409:
+                raise inventory.UnreadableEvidence(key) from exc
+            raise
+
+    def issue_inventory(self, body):
+        subjects, requested = inventory.checklist(body)
+        head = self.archive.head_sequence()
+        if head is None:
+            raise ContractError('成果库尚无封存，不能确定盘点截至点')
+        cutoff = head if requested is None else requested
+        if cutoff > head:
+            raise ContractError('截至点不能晚于最新封存序号')
+        latest = self.archive.latest_at_cutoff(subjects, cutoff)
+        issued_at = datetime.now(timezone.utc).isoformat()
+        # 单号在登记册事务内确定；先按预估序号构造，archive 写入时原子核对。
+        sheet_no = f'{inventory.NUMBER_PREFIX}-{self.archive.sheet_count() + 1:04d}'
+        sheet = inventory.build_sheet(sheet_no, subjects, cutoff, latest, self._verified)
+        self.archive.issue_sheet(sheet, issued_at)
+        return self.archive.read_sheet(sheet_no)
+
+    def reopen_inventory(self, sheet_no):
+        ident(sheet_no, '盘点单号')
+        stored = self.archive.read_sheet(sheet_no)
+        return inventory.reopen(stored, self._verified)

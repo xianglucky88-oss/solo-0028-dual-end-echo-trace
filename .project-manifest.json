@@ -28,6 +28,11 @@
       "responsibility": "SQLite 历史版本与原子封存"
     },
     {
+      "id": "inventory",
+      "path": "echotrace/inventory.py",
+      "responsibility": "按封存截至点编制盘点单、分类证据与重开核对"
+    },
+    {
       "id": "service",
       "path": "echotrace/service.py",
       "responsibility": "串联归约、比对和历史读取"
@@ -86,6 +91,11 @@
       "id": "version_panel",
       "path": "web/version-panel.js",
       "responsibility": "封存选择、版本读取、比对和下载"
+    },
+    {
+      "id": "inventory_panel",
+      "path": "web/inventory-panel.js",
+      "responsibility": "待查清单提交、截至点签发与盘点单重开界面"
     }
   ],
   "workflows": [
@@ -504,6 +514,28 @@
         "pulses",
         "propagation",
         "pairing"
+      ]
+    },
+    {
+      "id": "inventory",
+      "name": "月底盘点单",
+      "entry": "POST /echotrace/api/inventory 与 GET /echotrace/api/inventory/<单号>",
+      "steps": [
+        "资料员提交待查清单并固定封存截至点，每对象选截至当时序号最大的封存，不看版本菜单与样点时标",
+        "按没有封存、未做采样支撑复核、获两端邻样支撑闭合、未获闭合、证据不可读五类分列，不可读不回退旧包",
+        "签发后按单号重开，明细与分类不随迟到封存变化，仅重新标注证据当前可读性"
+      ],
+      "success": "同一份待查清单下，旧档被挤出菜单仍可选中、盘点期间封存只在新单体现、不可读最新档单列，新旧两单可核对差别",
+      "failure": "清单为空或重复、截至点越界返回 400；未知单号返回 404；不产生盘点单",
+      "verification": "python3 -m echotrace.check_flow inventory",
+      "module_ids": [
+        "server",
+        "service",
+        "archive",
+        "inventory",
+        "artifacts",
+        "contract",
+        "inventory_panel"
       ]
     }
   ],

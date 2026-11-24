@@ -7,7 +7,7 @@
     ".css",
     ".html"
   ],
-  "build_command": "python3 -m compileall -q echotrace && node --input-type=module --check < web/ui.js && node --input-type=module --check < web/chart.js && node --input-type=module --check < web/result-table.js && node --input-type=module --check < web/version-panel.js",
+  "build_command": "python3 -m compileall -q echotrace && node --input-type=module --check < web/ui.js && node --input-type=module --check < web/chart.js && node --input-type=module --check < web/result-table.js && node --input-type=module --check < web/version-panel.js && node --input-type=module --check < web/inventory-panel.js",
   "testing": "deferred",
   "workflow_checks": [
     {
@@ -81,6 +81,10 @@
     {
       "workflow_id": "revisit_coverage",
       "command": "python3 -m echotrace.check_flow revisit_coverage"
+    },
+    {
+      "workflow_id": "inventory",
+      "command": "python3 -m echotrace.check_flow inventory"
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { draw } from '/chart.js';
 import { renderRows } from '/result-table.js';
 import { versionPanel } from '/version-panel.js';
+import { inventoryPanel } from '/inventory-panel.js';
 
 const $ = (id) => document.getElementById(id);
 const base = document.body.dataset.prefix;
@@ -127,5 +128,7 @@ guarded(async () => {
     note(`已比较 ${left.slice(0, 8)} 与 ${right.slice(0, 8)}`);
   });
   await versions.refresh();
+  const inventory = inventoryPanel(request, model);
+  await inventory.refreshLedger();
   await choose('sample');
 });

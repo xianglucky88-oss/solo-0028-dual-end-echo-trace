@@ -18,6 +18,7 @@ STATIC = {
     '/ui.js': ('ui.js', 'text/javascript'),
     '/chart.js': ('chart.js', 'text/javascript'),
     '/version-panel.js': ('version-panel.js', 'text/javascript'),
+    '/inventory-panel.js': ('inventory-panel.js', 'text/javascript'),
     '/result-table.js': ('result-table.js', 'text/javascript'),
     '/style.css': ('style.css', 'text/css'),
 }
@@ -70,6 +71,11 @@ class Handler(BaseHTTPRequestHandler):
             self.response((ROOT / 'examples' / (action + '.json')).read_bytes())
         elif action == 'revisions':
             self.response(canonical(wb.archive.list()))
+        elif action == 'inventory-sheets':
+            self.response(canonical(wb.archive.list_sheets()))
+        elif action.startswith('inventory/'):
+            _, sheet_no = action.split('/', 1)
+            self.response(canonical(wb.reopen_inventory(sheet_no)))
         elif action.startswith(('packet/', 'export/')):
             command, key = action.split('/', 1)
             packet = wb.read(key)

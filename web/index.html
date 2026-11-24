@@ -42,6 +42,24 @@
         <button id="inspect">打开目标版本</button><button id="compare">查看差异</button><a class="export-link" id="export" hidden>下载交接资料</a>
       </div>
     </section>
+    <section class="inventory">
+      <h2>月底盘点单</h2>
+      <p class="hint">资料员提交本月待查线缆清单，并在开始盘点时固定封存截至点；每个对象只取截至当时已封存的最新一份，与版本菜单和样点时标无关。</p>
+      <div class="inventory-tools">
+        <label class="checklist-label">待查清单（每行一个对象标识）
+          <textarea id="inventory-checklist" spellcheck="false" aria-label="待查线缆清单"></textarea>
+        </label>
+        <div class="inventory-actions">
+          <label>封存截至点序号（留空取最新）<input id="inventory-cutoff" inputmode="numeric" placeholder="如 103"></label>
+          <button id="inventory-issue" class="primary">按截至点签发盘点单</button>
+          <label>重开已签发单<select id="inventory-reopen"></select></label>
+        </div>
+      </div>
+      <div id="inventory-result-head" class="inventory-meta"></div>
+      <p id="inventory-counts" class="inventory-counts"></p>
+      <p id="inventory-empty" hidden>当前没有盘点明细</p>
+      <div class="table-scroll"><table id="inventory-table" hidden></table></div>
+    </section>
     <details id="source-pane" class="input-pane"><summary>来源数据</summary><textarea id="source" spellcheck="false" aria-label="观测来源数据"></textarea></details>
   </main>
   <dialog id="detail" aria-labelledby="detail-title"><form method="dialog"><h2 id="detail-title"></h2><button>关闭</button></form><div id="detail-content"></div></dialog>

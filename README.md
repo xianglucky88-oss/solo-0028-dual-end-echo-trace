@@ -18,6 +18,7 @@ python3 -m echotrace.server
 python3 -m echotrace.check_flow wave
 python3 -m echotrace.check_flow visibility
 python3 -m echotrace.check_flow export
+python3 -m echotrace.check_flow inventory
 ```
 
 这些命令在临时成果库和临时回环端口运行实际 HTTP 接口，分别核对样例、对照和拒绝路径。`examples` 保存业务示例及可人工核算的观测点。完整命令见 `.project-runtime.json`；自动化测试套件留置，不包含私有验收测试、缺陷任务或参考解答。
@@ -25,3 +26,7 @@ python3 -m echotrace.check_flow export
 ### 扩展复核
 
 使用「复核样例」，随后在「扩展复核」切换各项结果。有效输入见 `examples/review-sample.json` 与 `examples/review-alternate.json`。例如运行 `python3 -m echotrace.check_flow capture_gaps` 可核对派生结果、拒绝非法复核和基础版本兼容性。
+
+### 月底盘点单
+
+在「月底盘点单」提交本月待查线缆清单（每行一个对象标识），并固定封存截至点序号（留空取最新）。服务对每个对象只选截至当时已封存的最新一份，与版本菜单只列近 100 条无关；状态分为没有封存、已封存未做采样支撑复核、已复核获两端邻样支撑闭合、已复核未获闭合、证据不可读五类，最新指定成果不可读时单列且不回退旧包。签发后可按单号重开，明细不随迟到封存变化，只重新标注证据当前是否可读。
